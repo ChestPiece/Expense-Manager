@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Navbar } from "@/components/navbar";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { MainLayout } from "@/components/main-layout";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -112,161 +112,155 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Navbar />
-      <main className="max-w-md mx-auto px-4 py-16">
-        <div className="cyber-card p-8">
-          <h1 className="pixel-text text-2xl text-[#ff4500] font-bold mb-6 text-center">
-            CREATE ACCOUNT
-          </h1>
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div>
-              <label
-                htmlFor="fullName"
-                className="pixel-text text-sm text-gray-400"
-              >
-                Full Name
-              </label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="cyber-input pixel-text mt-1"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="email"
-                className="pixel-text text-sm text-gray-400"
-              >
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="cyber-input pixel-text mt-1"
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="pixel-text text-sm text-gray-400"
-              >
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="cyber-input pixel-text mt-1"
-                required
-              />
-              {password && (
-                <div className="mt-2">
-                  <div className="flex gap-1 h-1">
-                    {[...Array(5)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`flex-1 rounded-full ${
-                          i < passwordStrength.score
-                            ? "bg-[#ff4500]"
-                            : "bg-gray-700"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  {passwordStrength.feedback && (
-                    <p className="pixel-text text-xs text-gray-400 mt-1">
-                      Requirements: {passwordStrength.feedback}
-                    </p>
-                  )}
+    <MainLayout className="flex items-center justify-center">
+      <div className="w-full max-w-md cyber-card p-8 bg-black/50">
+        <h1 className="pixel-text text-2xl text-[#ff4500] font-bold mb-6 text-center">
+          CREATE ACCOUNT
+        </h1>
+        <form onSubmit={handleSignUp} className="space-y-4">
+          <div>
+            <label
+              htmlFor="fullName"
+              className="pixel-text text-sm text-gray-400"
+            >
+              Full Name
+            </label>
+            <Input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="cyber-input pixel-text mt-1"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="pixel-text text-sm text-gray-400">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="cyber-input pixel-text mt-1"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="pixel-text text-sm text-gray-400"
+            >
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="cyber-input pixel-text mt-1"
+              required
+            />
+            {password && (
+              <div className="mt-2">
+                <div className="flex gap-1 h-1">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 rounded-full ${
+                        i < passwordStrength.score
+                          ? "bg-[#ff4500]"
+                          : "bg-gray-700"
+                      }`}
+                    />
+                  ))}
                 </div>
-              )}
-            </div>
-            {error && (
-              <div className="pixel-text text-red-500 text-sm">{error}</div>
+                {passwordStrength.feedback && (
+                  <p className="pixel-text text-xs text-gray-400 mt-1">
+                    Requirements: {passwordStrength.feedback}
+                  </p>
+                )}
+              </div>
             )}
-            <Button
-              type="submit"
-              className="cyber-button pixel-text w-full"
-              disabled={loading || googleLoading || githubLoading}
-            >
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <LoadingSpinner />
-                  <span>Creating account...</span>
-                </div>
-              ) : (
-                "Create Account"
-              )}
-            </Button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-black text-gray-400">
-                Or continue with
-              </span>
-            </div>
           </div>
+          {error && (
+            <div className="pixel-text text-red-500 text-sm">{error}</div>
+          )}
+          <Button
+            type="submit"
+            className="cyber-button pixel-text w-full"
+            disabled={loading || googleLoading || githubLoading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <LoadingSpinner />
+                <span>Creating account...</span>
+              </div>
+            ) : (
+              "Create Account"
+            )}
+          </Button>
+        </form>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="cyber-button pixel-text"
-              onClick={() => handleSocialLogin("google")}
-              disabled={loading || googleLoading || githubLoading}
-            >
-              {googleLoading ? (
-                <div className="flex items-center gap-2">
-                  <LoadingSpinner />
-                  <span>Connecting to Google...</span>
-                </div>
-              ) : (
-                "Google"
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="cyber-button pixel-text"
-              onClick={() => handleSocialLogin("github")}
-              disabled={loading || googleLoading || githubLoading}
-            >
-              {githubLoading ? (
-                <div className="flex items-center gap-2">
-                  <LoadingSpinner />
-                  <span>Connecting to GitHub...</span>
-                </div>
-              ) : (
-                "GitHub"
-              )}
-            </Button>
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-700"></div>
           </div>
-
-          <div className="mt-4 text-center">
-            <span className="pixel-text text-sm text-gray-400">
-              Already have an account?{" "}
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-black text-gray-400">
+              Or continue with
             </span>
-            <Link
-              href="/login"
-              className="pixel-text text-[#ff4500] hover:underline"
-            >
-              Login
-            </Link>
           </div>
         </div>
-      </main>
-    </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="cyber-button pixel-text"
+            onClick={() => handleSocialLogin("google")}
+            disabled={loading || googleLoading || githubLoading}
+          >
+            {googleLoading ? (
+              <div className="flex items-center gap-2">
+                <LoadingSpinner />
+                <span>Connecting to Google...</span>
+              </div>
+            ) : (
+              "Google"
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="cyber-button pixel-text"
+            onClick={() => handleSocialLogin("github")}
+            disabled={loading || googleLoading || githubLoading}
+          >
+            {githubLoading ? (
+              <div className="flex items-center gap-2">
+                <LoadingSpinner />
+                <span>Connecting to GitHub...</span>
+              </div>
+            ) : (
+              "GitHub"
+            )}
+          </Button>
+        </div>
+
+        <div className="mt-4 text-center">
+          <span className="pixel-text text-sm text-gray-400">
+            Already have an account?{" "}
+          </span>
+          <Link
+            href="/login"
+            className="pixel-text text-[#ff4500] hover:underline"
+          >
+            Login
+          </Link>
+        </div>
+      </div>
+    </MainLayout>
   );
 }

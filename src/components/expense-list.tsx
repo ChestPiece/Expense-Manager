@@ -1,13 +1,32 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, Plus, TrendingUp, AlertTriangle } from "lucide-react";
 import { useExpenses } from "@/hooks/useExpenses";
+import { toast } from "sonner";
 
 interface Currency {
   code: string;
@@ -99,6 +118,9 @@ export function ExpenseList({ userId }: { userId: string }) {
       setAmount("");
       setCategoryId("");
       fetchExpenses();
+      toast.success("Expense added successfully!");
+    } else {
+      toast.error("Failed to add expense.");
     }
   }
 
@@ -113,6 +135,7 @@ export function ExpenseList({ userId }: { userId: string }) {
       setPendingDeleteId(null);
       setConfirmOpen(false);
       fetchExpenses();
+      toast.success("Expense deleted.");
     }
   }
 
@@ -128,29 +151,23 @@ export function ExpenseList({ userId }: { userId: string }) {
         .eq("user_id", userId);
 
       if (error) throw error;
-
-      // Clear categories state after successful deletion
       setCategories([]);
-      // Optionally, also remove expenses associated with these categories if needed
-      // This might be handled by a database foreign key constraint with ON DELETE CASCADE
-      // or require a separate delete call for expenses where category_id is null after deleting categories.
-      // For now, assuming ON DELETE CASCADE or no explicit expense cleanup needed here.
+      toast.success("All categories deleted.");
     } catch (error) {
       console.error("Error deleting all categories:", error);
-      // Handle error, maybe show a message to the user
+      toast.error("Failed to delete categories.");
     } finally {
       setConfirmDeleteAllOpen(false);
     }
   }
 
-  async function handleCurrencyChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newCurrency = e.target.value;
-    setCurrency(newCurrency);
-    // Update user preference in DB
+  async function handleCurrencyChange(value: string) {
+    setCurrency(value);
     await supabase.from("user_preferences").upsert({
       user_id: userId,
-      currency_code: newCurrency,
+      currency_code: value,
     });
+    toast.success("Currency updated.");
   }
 
   const currencyObj = currencies.find((c) => c.code === currency) || {
@@ -159,7 +176,6 @@ export function ExpenseList({ userId }: { userId: string }) {
     name: "US Dollar",
   };
 
-  // Filter and sort expenses
   const filteredExpenses = expenses
     .filter((e) => {
       const cat = categories.find((c) => c.id === e.category_id)?.name || "";
@@ -176,7 +192,6 @@ export function ExpenseList({ userId }: { userId: string }) {
       } else if (sortBy === "amount") {
         return sortDir === "asc" ? a.amount - b.amount : b.amount - a.amount;
       } else {
-        // category
         const catA = categories.find((c) => c.id === a.category_id)?.name || "";
         const catB = categories.find((c) => c.id === b.category_id)?.name || "";
         return sortDir === "asc"
@@ -186,442 +201,372 @@ export function ExpenseList({ userId }: { userId: string }) {
     });
 
   return (
-    <div className="max-w-2xl mx-auto mt-16 mb-12">
-      <p className="pixel-text text-base text-muted-foreground mb-6 text-center">
-        Track your expenses, manage budgets, and see your spending progress in
-        one place.
-      </p>
-      <div className="flex items-center gap-4 mb-2">
-        <label
-          htmlFor="currency"
-          className="pixel-text text-[#ff4500] font-bold"
-        >
-          Currency:
-        </label>
-        {currencyLoading ? (
-          <span className="text-muted-foreground pixel-text">
-            Loading currencies...
-          </span>
-        ) : (
-          <select
-            id="currency"
-            className="border rounded px-2 py-1 pixel-text text-[#ff4500] bg-white max-w-xs w-48"
-            value={currency}
-            onChange={handleCurrencyChange}
-          >
-            {currencies.map((c) => (
-              <option
-                key={c.code}
-                value={c.code}
-                className="pixel-text text-black"
-              >
-                {c.code} ({c.symbol}) - {c.name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-      <p className="pixel-text text-xs text-muted-foreground mb-4">
-        Choose your preferred currency for all expenses and budgets.
-      </p>
-      <form onSubmit={handleAdd} className="flex gap-2 mb-2 flex-wrap">
-        <Input
-          placeholder="Expense title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="cyber-input pixel-text"
-        />
-        <Input
-          placeholder="Amount"
-          type="number"
-          min="0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="cyber-input pixel-text"
-        />
-        <select
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="border rounded px-2 py-1 pixel-text text-[#ff4500] bg-white"
-          required
-        >
-          <option value="" disabled>
-            Select category
-          </option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" className="cyber-button pixel-text">
-          Add
-        </Button>
-      </form>
-      <p className="pixel-text text-xs text-muted-foreground mb-4">
-        Add a new expense to track your spending. Select a category to organize
-        your expenses.
-      </p>
-      {/* Search and Sort Bar */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center justify-between">
-        <Input
-          placeholder="Search expenses or categories..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pixel-text w-full sm:w-1/2"
-        />
-        <div className="flex gap-2 items-center">
-          <label className="pixel-text text-xs text-muted-foreground">
-            Sort by:
-          </label>
-          <select
-            value={sortBy}
-            onChange={(e) =>
-              setSortBy(e.target.value as "date" | "amount" | "category")
-            }
-            className="pixel-text border rounded px-2 py-1"
-          >
-            <option value="date">Date</option>
-            <option value="amount">Amount</option>
-            <option value="category">Category</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
-            className="pixel-text border rounded px-2 py-1"
-            aria-label="Toggle sort direction"
-          >
-            {sortDir === "asc" ? "↑" : "↓"}
-          </button>
-        </div>
-      </div>
-      {/* Category Management Section */}
-      <div className="mb-8">
-        <h2 className="pixel-text text-lg text-[#ff4500] mb-2 inline-block">
-          Categories & Budgets
-        </h2>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDeleteAllCategories}
-          className="cyber-button pixel-text ml-2 mr-4"
-        >
-          Delete All Categories
-        </Button>
-        <ul className="mb-8 space-y-2">
-          {categories.map((cat) => (
-            <li key={cat.id} className="flex items-center gap-2">
-              {editingCategoryId === cat.id ? (
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    await supabase
-                      .from("categories")
-                      .update({
-                        name: editCategoryName,
-                        budget: parseFloat(editCategoryBudget),
-                      })
-                      .eq("id", cat.id);
-                    setEditingCategoryId(null);
-                    setEditCategoryName("");
-                    setEditCategoryBudget("");
-                    // Refresh
-                    const { data } = await supabase
-                      .from("categories")
-                      .select("id, user_id, name, budget")
-                      .eq("user_id", userId);
-                    if (data) setCategories(data as Category[]);
-                  }}
-                  className="flex gap-2"
-                >
-                  <Input
-                    value={editCategoryName}
-                    onChange={(e) => setEditCategoryName(e.target.value)}
-                    className="cyber-input pixel-text"
-                    placeholder="Category name"
-                    required
-                  />
-                  <Input
-                    value={editCategoryBudget}
-                    onChange={(e) => setEditCategoryBudget(e.target.value)}
-                    className="cyber-input pixel-text"
-                    placeholder="Budget"
-                    type="number"
-                    min="0"
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="cyber-button pixel-text"
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditingCategoryId(null)}
-                    className="cyber-button pixel-text"
-                  >
-                    Cancel
-                  </Button>
-                </form>
-              ) : (
-                <>
-                  <span className="pixel-text font-bold">{cat.name}</span>
-                  <span className="pixel-text text-sm text-muted-foreground">
-                    Budget: {currencyObj.symbol}
-                    {cat.budget}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setEditingCategoryId(cat.id);
-                      setEditCategoryName(cat.name);
-                      setEditCategoryBudget(cat.budget.toString());
-                    }}
-                    className="cyber-button pixel-text"
-                  >
-                    <Pencil size={16} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={async () => {
-                      await supabase
-                        .from("categories")
-                        .delete()
-                        .eq("id", cat.id);
-                      setCategories(categories.filter((c) => c.id !== cat.id));
-                    }}
-                    className="cyber-button pixel-text"
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (!newCategory || !newBudget) return;
-            const { data, error } = await supabase
-              .from("categories")
-              .insert({
-                user_id: userId,
-                name: newCategory,
-                budget: parseFloat(newBudget),
-              })
-              .select();
-            if (!error && data) setCategories([...categories, ...data]);
-            setNewCategory("");
-            setNewBudget("");
-          }}
-          className="flex gap-2"
-        >
-          <Input
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="cyber-input pixel-text"
-            placeholder="New category"
-            required
-          />
-          <Input
-            value={newBudget}
-            onChange={(e) => setNewBudget(e.target.value)}
-            className="cyber-input pixel-text"
-            placeholder="Budget"
-            type="number"
-            min="0"
-            required
-          />
-          <Button type="submit" className="cyber-button pixel-text">
-            Add Category
-          </Button>
-        </form>
-      </div>
-      {/* Category Progress Bars */}
-      <div className="mb-8">
-        <h2 className="pixel-text text-lg text-[#ff4500] mb-2">
-          Budget Progress
-        </h2>
-        <ul className="space-y-4">
-          {categories.map((cat) => {
-            const spent = expenses
-              .filter((e) => e.category_id === cat.id)
-              .reduce((sum, e) => sum + e.amount, 0);
-            const over = spent > cat.budget;
-            return (
-              <li key={cat.id}>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="pixel-text font-bold">{cat.name}</span>
-                  <span className="pixel-text text-sm">
-                    {currencyObj.symbol}
-                    {spent.toFixed(2)} / {currencyObj.symbol}
-                    {cat.budget}
-                  </span>
-                </div>
-                <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-4 transition-all duration-500 ${
-                      over ? "bg-red-500" : "bg-[#ff4500]"
-                    }`}
-                    style={{
-                      width: `${
-                        cat.budget > 0
-                          ? Math.min((spent / cat.budget) * 100, 100)
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-                {over && (
-                  <div className="pixel-text text-red-500 text-xs mt-1">
-                    ⚠ Over budget!
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-      {/* Expense List Table */}
-      <div className="mt-6">
-        <h2 className="pixel-text text-xl text-[#ff4500] font-bold mb-2">
-          Expenses
-        </h2>
-        <p className="pixel-text text-xs text-muted-foreground mb-2">
-          Below is a list of your expenses. You can search, sort, edit, or
-          delete any entry.
-        </p>
-        <div className="w-full max-w-2xl mx-auto rounded-2xl border border-[#ff4500]/20 bg-white/90 dark:bg-zinc-900/90 shadow-lg overflow-hidden mt-8">
-          <ConfirmDialog
-            open={confirmOpen}
-            onOpenChange={setConfirmOpen}
-            onConfirm={confirmDelete}
-            title="Delete Expense?"
-            description="Are you sure you want to delete this expense? This action cannot be undone."
-            confirmText="Delete"
-            cancelText="Cancel"
-          />
-          <ConfirmDialog
-            open={confirmDeleteAllOpen}
-            onOpenChange={setConfirmDeleteAllOpen}
-            onConfirm={confirmDeleteAllCategories}
-            title="Delete All Categories?"
-            description="Are you sure you want to delete ALL categories? This will also remove associated budgets. This action cannot be undone."
-            confirmText="Delete All"
-            cancelText="Cancel"
-          />
-          <div className="">
-            <table className="min-w-full">
-              <colgroup>
-                <col style={{ width: "20%" }} />
-                <col style={{ width: "22%" }} />
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "20%" }} />
-                <col style={{ width: "20%" }} />
-              </colgroup>
-              <thead>
-                <tr className="bg-[#1a1a1a] dark:bg-[#2a2a2a] border-b border-[#ff4500]/30">
-                  <th className="pixel-text text-left px-4 py-3 text-[#ff4500] whitespace-nowrap">
-                    Title
-                  </th>
-                  <th className="pixel-text text-left px-4 py-3 text-[#ff4500] whitespace-nowrap">
-                    Category
-                  </th>
-                  <th className="pixel-text text-right px-4 py-3 text-[#ff4500] whitespace-nowrap">
-                    Amount
-                  </th>
-                  <th className="pixel-text text-center px-4 py-3 text-[#ff4500] whitespace-nowrap">
-                    Date
-                  </th>
-                  <th className="pixel-text text-center px-4 py-3 text-[#ff4500] whitespace-nowrap">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredExpenses.map((expense, idx) => (
-                  <tr
-                    key={expense.id}
-                    className={
-                      (idx % 2 === 0
-                        ? "bg-[#f5f5f5] dark:bg-[#ff4500]/[0.10]"
-                        : "") +
-                      " hover:bg-[#ff4500]/10 dark:hover:bg-[#ff4500]/30 transition-colors flex flex-col mb-4 sm:table-row"
-                    }
-                  >
-                    <td className="pixel-text px-2 py-2 text-[#222] dark:text-inherit w-full sm:px-4 sm:table-cell">
-                      <span className="sm:hidden font-bold text-[#ff4500]">
-                        Title:{" "}
-                      </span>
-                      {expense.title}
-                    </td>
-                    <td className="pixel-text px-2 py-2 text-[#222] dark:text-inherit w-full sm:px-4 sm:table-cell">
-                      <span className="sm:hidden font-bold text-[#ff4500]">
-                        Category:{" "}
-                      </span>
-                      {categories.find((c) => c.id === expense.category_id)
-                        ?.name || "-"}
-                    </td>
-                    <td className="pixel-text px-2 py-2 text-right text-[#ff4500] w-full sm:px-4 sm:table-cell">
-                      <span className="sm:hidden font-bold text-[#ff4500]">
-                        Amount:{" "}
-                      </span>
-                      {currencyObj.symbol}
-                      {expense.amount.toFixed(2)} {currencyObj.code}
-                    </td>
-                    <td className="pixel-text px-2 py-2 text-center w-full sm:px-4 sm:table-cell">
-                      <span className="sm:hidden font-bold text-[#ff4500]">
-                        Date:{" "}
-                      </span>
-                      {format(new Date(expense.created_at), "MMM d, yyyy")}
-                    </td>
-                    <td className="pixel-text px-2 py-2 text-center w-full sm:px-4 sm:table-cell">
-                      <div className="flex gap-2 justify-center">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(expense.id)}
-                          className="cyber-button pixel-text"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      {loading ? (
-        <div className="text-center text-muted-foreground pixel-text">
-          Loading...
-        </div>
-      ) : expenses.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8 pixel-text">
-          There are no expenses added yet! Start adding expenses
-        </div>
-      ) : (
-        <>
-          <div className="flex justify-center mt-8">
-            <Button
-              variant="default"
-              onClick={() => router.push(`/invoice?currency=${currency}`)}
-              className="cyber-button pixel-text px-6 py-2 text-base sm:text-lg rounded-xl border-2 border-[#ff4500] hover:bg-[#ff4500]/10 transition-all"
+    <div className="max-w-4xl mx-auto mt-8 mb-12 space-y-8 px-4">
+      {/* Header Section */}
+      <Card className="border-pixel shadow-pixel bg-card">
+        <CardHeader>
+          <CardTitle className="pixel-font flex items-center gap-2 text-primary">
+            <TrendingUp className="w-6 h-6" />
+            Control Panel
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+          <div className="flex flex-col gap-2 w-full md:w-auto">
+            <label className="text-sm font-medium">Active Currency</label>
+            <Select
+              value={currency}
+              onValueChange={handleCurrencyChange}
+              disabled={currencyLoading}
             >
-              Check your total expense
+              <SelectTrigger className="w-full md:w-[200px] border-2 shadow-[2px_2px_0_0_#000]">
+                <SelectValue placeholder="Select Currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.code} ({c.symbol}) - {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2 w-full md:w-auto">
+            <label className="text-sm font-medium">Quick Actions</label>
+            <Button
+              onClick={() => router.push(`/invoice?currency=${currency}`)}
+              className="border-2 border-black shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+            >
+              Generate Invoice
             </Button>
           </div>
-        </>
-      )}
+        </CardContent>
+      </Card>
+
+      {/* Add Expense Section */}
+      <Card className="border-pixel shadow-pixel bg-card">
+        <CardHeader>
+          <CardTitle className="pixel-font font-bold text-lg">
+            Add New Transaction
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={handleAdd}
+            className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
+          >
+            <div className="space-y-2 col-span-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                placeholder="e.g. Cyber Implant"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="border-2 shadow-[2px_2px_0_0_#000] focus-visible:ring-0 focus-visible:border-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Amount</label>
+              <Input
+                placeholder="0.00"
+                type="number"
+                min="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="border-2 shadow-[2px_2px_0_0_#000] focus-visible:ring-0 focus-visible:border-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category</label>
+              <Select value={categoryId} onValueChange={setCategoryId} required>
+                <SelectTrigger className="border-2 shadow-[2px_2px_0_0_#000]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="submit"
+              className="md:col-span-4 w-full border-2 border-black shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none bg-primary text-primary-foreground hover:bg-primary/90 mt-2"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Record Transaction
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Budgets Column */}
+        <div className="space-y-6 lg:col-span-1">
+          <Card className="border-pixel shadow-pixel h-full">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="pixel-font text-lg">Budgets</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDeleteAllCategories}
+                title="Delete All Categories"
+              >
+                <Trash2 className="w-4 h-4 text-destructive" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Add Category Mini Form */}
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!newCategory || !newBudget) return;
+                  const { data, error } = await supabase
+                    .from("categories")
+                    .insert({
+                      user_id: userId,
+                      name: newCategory,
+                      budget: parseFloat(newBudget),
+                    })
+                    .select();
+                  if (!error && data) {
+                    setCategories([...categories, ...data]);
+                    toast.success("Category added");
+                  }
+                  setNewCategory("");
+                  setNewBudget("");
+                }}
+                className="flex flex-col gap-2 p-4 border-2 border-dashed border-gray-300 rounded-none bg-muted/20"
+              >
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                  New Budget
+                </span>
+                <Input
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="h-8 text-sm"
+                  placeholder="Category Name"
+                  required
+                />
+                <Input
+                  value={newBudget}
+                  onChange={(e) => setNewBudget(e.target.value)}
+                  className="h-8 text-sm"
+                  placeholder="Limit"
+                  type="number"
+                  min="0"
+                  required
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="outline"
+                  className="w-full border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-y-0.5 active:shadow-none"
+                >
+                  Create
+                </Button>
+              </form>
+
+              <div className="space-y-4">
+                {categories.map((cat) => {
+                  const spent = expenses
+                    .filter((e) => e.category_id === cat.id)
+                    .reduce((sum, e) => sum + e.amount, 0);
+                  const percentage =
+                    cat.budget > 0
+                      ? Math.min((spent / cat.budget) * 100, 100)
+                      : 0;
+                  const isOver = spent > cat.budget;
+
+                  return (
+                    <div key={cat.id} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="font-bold">{cat.name}</span>
+                        <span className="text-muted-foreground">
+                          {currencyObj.symbol}
+                          {spent} / {cat.budget}
+                        </span>
+                      </div>
+                      <Progress
+                        value={percentage}
+                        className={`h-3 border border-black ${
+                          isOver ? "[&>div]:bg-red-500" : "[&>div]:bg-primary"
+                        }`}
+                      />
+                      {isOver && (
+                        <div className="text-xs text-red-500 font-bold flex items-center">
+                          <AlertTriangle className="w-3 h-3 mr-1" /> Over Budget
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Expenses List Column */}
+        <div className="space-y-6 lg:col-span-2">
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <Input
+              placeholder="Search logs..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-white border-2 shadow-[2px_2px_0_0_#000]"
+            />
+            <div className="flex gap-2">
+              <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                <SelectTrigger className="w-[120px] bg-white border-2 shadow-[2px_2px_0_0_#000]">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="amount">Amount</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
+                className="border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-y-0.5 active:shadow-none"
+              >
+                {sortDir === "asc" ? "↑" : "↓"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block rounded-none border-2 border-black shadow-pixel bg-white overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted">
+                <TableRow className="border-b-2 border-black hover:bg-muted">
+                  <TableHead className="font-bold text-black">
+                    Transaction
+                  </TableHead>
+                  <TableHead className="font-bold text-black">
+                    Category
+                  </TableHead>
+                  <TableHead className="font-bold text-black text-right">
+                    Amount
+                  </TableHead>
+                  <TableHead className="font-bold text-black text-right">
+                    Date
+                  </TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredExpenses.map((expense) => (
+                  <TableRow
+                    key={expense.id}
+                    className="border-b border-gray-200 hover:bg-orange-50/50"
+                  >
+                    <TableCell className="font-medium">
+                      {expense.title}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 border border-gray-300">
+                        {categories.find((c) => c.id === expense.category_id)
+                          ?.name || "Uncategorized"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right font-bold font-mono">
+                      {currencyObj.symbol}
+                      {expense.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground text-xs">
+                      {format(new Date(expense.created_at), "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(expense.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {filteredExpenses.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="h-24 text-center text-muted-foreground"
+                    >
+                      No records found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {filteredExpenses.map((expense) => (
+              <Card
+                key={expense.id}
+                className="border-2 border-black shadow-[3px_3px_0_0_#000]"
+              >
+                <CardContent className="p-4 flex justify-between items-center">
+                  <div>
+                    <h4 className="font-bold text-sm">{expense.title}</h4>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {format(new Date(expense.created_at), "MMM d, yyyy")} •
+                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 border border-gray-200">
+                        {categories.find((c) => c.id === expense.category_id)
+                          ?.name || "Uncategorized"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold font-mono text-lg">
+                      {currencyObj.symbol}
+                      {expense.amount.toFixed(2)}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-destructive -mr-2 mt-1"
+                      onClick={() => handleDelete(expense.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {filteredExpenses.length === 0 && (
+              <div className="text-center p-8 border-2 border-dashed border-gray-300 text-muted-foreground">
+                No records found.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        onConfirm={confirmDelete}
+        title="Delete Transaction?"
+        description="This action cannot be undone. Are you sure?"
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteAllOpen}
+        onOpenChange={setConfirmDeleteAllOpen}
+        onConfirm={confirmDeleteAllCategories}
+        title="Reset All Budgets?"
+        description="This will delete all your categories and their limits. Existing expenses will become uncategorized."
+        confirmText="Reset"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

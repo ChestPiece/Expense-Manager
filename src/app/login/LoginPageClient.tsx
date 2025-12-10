@@ -1,26 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { Navbar } from "@/components/navbar";
+import { MainLayout } from "@/components/main-layout";
 import { LoginForm } from "./LoginForm";
 import { Suspense } from "react";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function LoginPageClient() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Navbar />
-      <Suspense fallback={<div>Loading form...</div>}>
-        {showForgotPassword ? (
-          <ForgotPasswordForm onCancel={() => setShowForgotPassword(false)} />
-        ) : (
-          <LoginForm
-            onForgotPasswordClick={() => setShowForgotPassword(true)}
-          />
-        )}
-      </Suspense>
-    </div>
+    <MainLayout className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+      <div className="w-full max-w-md px-4">
+        <Card className="border-2 border-black shadow-pixel bg-card/95 backdrop-blur">
+          <CardContent className="p-8">
+            <Suspense
+              fallback={
+                <div className="text-center font-mono">Loading form...</div>
+              }
+            >
+              {showForgotPassword ? (
+                <ForgotPasswordForm
+                  onCancel={() => setShowForgotPassword(false)}
+                />
+              ) : (
+                <LoginForm
+                  onForgotPasswordClick={() => setShowForgotPassword(true)}
+                />
+              )}
+            </Suspense>
+          </CardContent>
+        </Card>
+      </div>
+    </MainLayout>
   );
 }

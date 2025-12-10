@@ -77,8 +77,8 @@ export function Navbar() {
     return (
       <button
         onClick={() => handleNavigation(href)}
-        className={`pixel-text text-gray-300 hover:text-[#ff4500] ${
-          isActive ? "text-[#ff4500]" : ""
+        className={`pixel-font text-muted-foreground hover:text-primary ${
+          isActive ? "text-primary" : ""
         }`}
         disabled={isNavigating || isRefreshing}
       >
@@ -113,7 +113,7 @@ export function Navbar() {
     return (
       <button
         onClick={() => handleNavigation(href)}
-        className="block pixel-text text-gray-300 hover:text-[#ff4500] py-2 w-full text-left"
+        className="block pixel-font text-muted-foreground hover:text-primary py-2 w-full text-left"
         disabled={isNavigating || isRefreshing}
       >
         {isDashboardRefresh ? (
@@ -134,13 +134,14 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-black border-b border-gray-800 sticky top-0 z-50">
+ 
+    <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <button
               onClick={() => handleNavigation("/")}
-              className="pixel-text text-[#ff4500] text-lg sm:text-xl font-bold hover:opacity-80 transition-opacity"
+              className="pixel-font text-primary text-lg sm:text-xl font-bold hover:opacity-80 transition-opacity"
               disabled={isNavigating || isRefreshing}
             >
               {activeLink === "/" && isNavigating ? (
@@ -157,7 +158,7 @@ export function Navbar() {
             {user && <NavLink href="/dashboard">Dashboard</NavLink>}
             {user ? (
               <>
-                <span className="pixel-text text-gray-300 text-sm sm:text-base truncate max-w-[150px] sm:max-w-[200px]">
+                <span className="pixel-font text-muted-foreground text-sm sm:text-base truncate max-w-[150px] sm:max-w-[200px]">
                   {user.user_metadata?.full_name || user.email}
                 </span>
                 {mounted && (
@@ -166,19 +167,19 @@ export function Navbar() {
                     onClick={() =>
                       setTheme(theme === "dark" ? "light" : "dark")
                     }
-                    className="ml-2 p-2 rounded-full hover:bg-gray-800 transition-colors"
+                    className="ml-2 p-2 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white transition-all"
                     disabled={isNavigating || isRefreshing}
                   >
                     {theme === "dark" ? (
-                      <Sun size={18} className="text-yellow-400" />
+                      <Sun size={18} className="text-primary" />
                     ) : (
-                      <Moon size={18} className="text-gray-400" />
+                      <Moon size={18} className="text-foreground" />
                     )}
                   </button>
                 )}
                 <Button
                   variant="outline"
-                  className="cyber-button pixel-text"
+                  className="pixel-font border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-y-0.5 active:shadow-none bg-background text-foreground hover:bg-muted"
                   onClick={handleLogout}
                   disabled={isLoggingOut || isNavigating || isRefreshing}
                 >
@@ -202,13 +203,13 @@ export function Navbar() {
                     onClick={() =>
                       setTheme(theme === "dark" ? "light" : "dark")
                     }
-                    className="ml-2 p-2 rounded-full hover:bg-gray-800 transition-colors"
+                    className="ml-2 p-2 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white transition-all"
                     disabled={isNavigating || isRefreshing}
                   >
                     {theme === "dark" ? (
-                      <Sun size={18} className="text-yellow-400" />
+                      <Sun size={18} className="text-primary" />
                     ) : (
-                      <Moon size={18} className="text-gray-400" />
+                      <Moon size={18} className="text-foreground" />
                     )}
                   </button>
                 )}
@@ -218,7 +219,7 @@ export function Navbar() {
           <div className="sm:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-[#ff4500] transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
               disabled={isNavigating || isRefreshing}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -227,7 +228,7 @@ export function Navbar() {
         </div>
       </div>
       {isMenuOpen && (
-        <div className="sm:hidden absolute w-full bg-black border-b border-gray-800 animate-in slide-in-from-top duration-200">
+        <div className="sm:hidden absolute w-full bg-background border-b border-border animate-in slide-in-from-top duration-200">
           <div className="px-4 pt-2 pb-3 space-y-1">
             {user && (
               <MobileNavButton href="/dashboard">Dashboard</MobileNavButton>
