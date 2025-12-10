@@ -41,19 +41,19 @@ export function ForgotPasswordForm({ onCancel }: ForgotPasswordFormProps) {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
-        <h1 className="pixel-text text-2xl sm:text-3xl font-bold text-[#ff4500] mb-2">
+        <h1 className="pixel-font text-2xl sm:text-3xl font-bold text-primary mb-2">
           Forgot Password
         </h1>
-        <p className="text-gray-400 text-sm sm:text-base">
+        <p className="text-muted-foreground text-sm sm:text-base">
           Enter your email to receive a password reset link
         </p>
         {message && (
           <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-            <p className="text-green-500 text-sm">{message}</p>
+            <p className="text-green-500 text-sm pixel-font">{message}</p>
           </div>
         )}
         {error && (
-          <div className="pixel-text text-red-500 text-sm text-center bg-red-500/10 p-2 rounded-lg">
+          <div className="text-destructive text-sm text-center font-medium bg-destructive/10 p-2 rounded-lg pixel-font">
             {error}
           </div>
         )}
@@ -63,7 +63,7 @@ export function ForgotPasswordForm({ onCancel }: ForgotPasswordFormProps) {
           <div>
             <label
               htmlFor="email"
-              className="pixel-text text-sm text-gray-400 block mb-1"
+              className="pixel-font text-xs uppercase text-muted-foreground block mb-1"
             >
               Email
             </label>
@@ -72,7 +72,7 @@ export function ForgotPasswordForm({ onCancel }: ForgotPasswordFormProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="cyber-input pixel-text w-full px-4 py-2 rounded-lg"
+              className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary w-full px-4 py-2 rounded-none"
               required
               disabled={loading}
             />
@@ -80,7 +80,7 @@ export function ForgotPasswordForm({ onCancel }: ForgotPasswordFormProps) {
 
           <Button
             type="submit"
-            className="cyber-button pixel-text w-full py-2 text-sm sm:text-base relative"
+            className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all hover:bg-primary/90"
             disabled={loading}
           >
             {loading ? (
@@ -96,7 +96,7 @@ export function ForgotPasswordForm({ onCancel }: ForgotPasswordFormProps) {
         <div className="text-center">
           <Button
             variant="link"
-            className="pixel-text text-[#ff4500] hover:underline px-0"
+            className="pixel-font text-primary hover:underline px-0"
             onClick={onCancel}
             disabled={loading}
           >

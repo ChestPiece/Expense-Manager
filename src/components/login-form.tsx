@@ -15,10 +15,15 @@ import { useState } from "react";
 import { LoadingSpinner } from "./loading-spinner";
 import { GoogleIcon, GithubIcon } from "./social-icons";
 
+export interface LoginFormProps extends React.ComponentProps<"div"> {
+  onForgotPasswordClick?: () => void;
+}
+
 export function LoginForm({
   className,
+  onForgotPasswordClick,
   ...props
-}: React.ComponentProps<"div">) {
+}: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -144,16 +149,16 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="welcome-message text-center mb-8">
-        <h1 className="pixel-text text-xl mb-2 text-[#ff4500]">
+        <h1 className="pixel-font text-xl mb-2 text-primary">
           Welcome to Expense Tracker
         </h1>
         <p className="text-lg text-muted-foreground">
           Sign in to see the real action
         </p>
       </div>
-      <Card className="cyber-card">
+      <Card className="border-pixel shadow-pixel bg-card">
         <CardHeader>
-          <CardTitle className="pixel-text text-lg text-[#ff4500]">
+          <CardTitle className="pixel-font text-lg text-primary">
             Login to your account
           </CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -164,12 +169,15 @@ export function LoginForm({
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               {error && (
-                <div className="text-sm text-red-500 text-center glitch">
+                <div className="text-sm text-destructive text-center font-medium">
                   {error}
                 </div>
               )}
               <div className="grid gap-3">
-                <Label htmlFor="email" className="pixel-text text-sm">
+                <Label
+                  htmlFor="email"
+                  className="pixel-font text-xs uppercase text-muted-foreground"
+                >
                   Email
                 </Label>
                 <Input
@@ -180,17 +188,26 @@ export function LoginForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password" className="pixel-text text-sm">
+                  <Label
+                    htmlFor="password"
+                    className="pixel-font text-xs uppercase text-muted-foreground"
+                  >
                     Password
                   </Label>
                   <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-[#ff4500]"
+                    href="/forgot-password"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-primary"
+                    onClick={(e) => {
+                      if (onForgotPasswordClick) {
+                        e.preventDefault();
+                        onForgotPasswordClick();
+                      }
+                    }}
                   >
                     Forgot your password?
                   </a>
@@ -202,13 +219,13 @@ export function LoginForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  className="w-full cyber-button bg-[#ff4500] hover:bg-[#ff0000]"
+                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all hover:bg-primary/90"
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {loading ? (
@@ -223,42 +240,38 @@ export function LoginForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button"
+                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all"
                   onClick={handleGoogleLogin}
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {googleLoading ? (
                     <div className="flex items-center gap-2">
                       <LoadingSpinner />
-                      <span className="pixel-text">
-                        Connecting to Google...
-                      </span>
+                      <span>Connecting to Google...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <GoogleIcon />
-                      <span className="pixel-text">Login with Google</span>
+                      <span>Login with Google</span>
                     </div>
                   )}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button"
+                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all"
                   onClick={handleGithubLogin}
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {githubLoading ? (
                     <div className="flex items-center gap-2">
                       <LoadingSpinner />
-                      <span className="pixel-text">
-                        Connecting to GitHub...
-                      </span>
+                      <span>Connecting to GitHub...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <GithubIcon />
-                      <span className="pixel-text">Login with GitHub</span>
+                      <span>Login with GitHub</span>
                     </div>
                   )}
                 </Button>
@@ -268,7 +281,7 @@ export function LoginForm({
               Don&apos;t have an account?{" "}
               <a
                 href="/signup"
-                className="underline underline-offset-4 text-[#ff4500]"
+                className="underline underline-offset-4 text-primary font-medium"
               >
                 Sign up
               </a>

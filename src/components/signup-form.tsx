@@ -79,7 +79,7 @@ export function SignUpForm({
             "This email is already registered. Please use login instead."
           );
         } else {
-        setError(signUpError.message);
+          setError(signUpError.message);
         }
         return;
       }
@@ -203,16 +203,16 @@ export function SignUpForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="welcome-message text-center mb-8">
-        <h1 className="pixel-text text-xl mb-2 text-[#ff4500]">
+        <h1 className="pixel-font text-xl mb-2 text-primary">
           Welcome to Expense Tracker
         </h1>
         <p className="text-lg text-muted-foreground">
           Sign up to see the real action
         </p>
       </div>
-      <Card className="cyber-card">
+      <Card className="border-pixel shadow-pixel bg-card">
         <CardHeader>
-          <CardTitle className="pixel-text text-lg text-[#ff4500]">
+          <CardTitle className="pixel-font text-lg text-primary">
             Create an account
           </CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -223,12 +223,15 @@ export function SignUpForm({
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               {error && (
-                <div className="text-sm text-red-500 text-center glitch">
+                <div className="text-sm text-destructive text-center font-medium">
                   {error}
                 </div>
               )}
               <div className="grid gap-3">
-                <Label htmlFor="name" className="pixel-text text-sm">
+                <Label
+                  htmlFor="name"
+                  className="pixel-font text-xs uppercase text-muted-foreground"
+                >
                   Full Name
                 </Label>
                 <Input
@@ -239,11 +242,14 @@ export function SignUpForm({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="email" className="pixel-text text-sm">
+                <Label
+                  htmlFor="email"
+                  className="pixel-font text-xs uppercase text-muted-foreground"
+                >
                   Email
                 </Label>
                 <Input
@@ -254,11 +260,14 @@ export function SignUpForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="password" className="pixel-text text-sm">
+                <Label
+                  htmlFor="password"
+                  className="pixel-font text-xs uppercase text-muted-foreground"
+                >
                   Password
                 </Label>
                 <Input
@@ -268,11 +277,14 @@ export function SignUpForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="confirmPassword" className="pixel-text text-sm">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="pixel-font text-xs uppercase text-muted-foreground"
+                >
                   Confirm Password
                 </Label>
                 <Input
@@ -282,13 +294,13 @@ export function SignUpForm({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  className="w-full cyber-button pixel-text"
+                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all hover:bg-primary/90"
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {loading ? (
@@ -303,7 +315,7 @@ export function SignUpForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button pixel-text"
+                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all"
                   onClick={handleGoogleSignUp}
                   disabled={loading || googleLoading || githubLoading}
                 >
@@ -322,7 +334,7 @@ export function SignUpForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button pixel-text"
+                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all"
                   onClick={handleGithubSignUp}
                   disabled={loading || googleLoading || githubLoading}
                 >
@@ -344,7 +356,7 @@ export function SignUpForm({
               Already have an account?{" "}
               <a
                 href="/login"
-                className="underline underline-offset-4 text-[#ff4500]"
+                className="underline underline-offset-4 text-primary font-medium"
               >
                 Login
               </a>
