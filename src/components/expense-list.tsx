@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -457,39 +458,45 @@ export function ExpenseList({ userId }: { userId: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredExpenses.map((expense) => (
-                  <TableRow
-                    key={expense.id}
-                    className="border-b border-gray-200 hover:bg-orange-50/50"
-                  >
-                    <TableCell className="font-medium">
-                      {expense.title}
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 border border-gray-300">
-                        {categories.find((c) => c.id === expense.category_id)
-                          ?.name || "Uncategorized"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right font-bold font-mono">
-                      {currencyObj.symbol}
-                      {expense.amount.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground text-xs">
-                      {format(new Date(expense.created_at), "MMM d, yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(expense.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                <AnimatePresence initial={false}>
+                  {filteredExpenses.map((expense) => (
+                    <motion.tr
+                      key={expense.id}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="border-b border-gray-200 hover:bg-orange-50/50"
+                    >
+                      <TableCell className="font-medium">
+                        {expense.title}
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 border border-gray-300">
+                          {categories.find((c) => c.id === expense.category_id)
+                            ?.name || "Uncategorized"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-bold font-mono">
+                        {currencyObj.symbol}
+                        {expense.amount.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground text-xs">
+                        {format(new Date(expense.created_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDelete(expense.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
                 {filteredExpenses.length === 0 && (
                   <TableRow>
                     <TableCell
@@ -506,39 +513,48 @@ export function ExpenseList({ userId }: { userId: string }) {
 
           {/* Mobile Card View */}
           <div className="md:hidden space-y-4">
-            {filteredExpenses.map((expense) => (
-              <Card
-                key={expense.id}
-                className="border-2 border-black shadow-[3px_3px_0_0_#000]"
-              >
-                <CardContent className="p-4 flex justify-between items-center">
-                  <div>
-                    <h4 className="font-bold text-sm">{expense.title}</h4>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(expense.created_at), "MMM d, yyyy")} •
-                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 border border-gray-200">
-                        {categories.find((c) => c.id === expense.category_id)
-                          ?.name || "Uncategorized"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold font-mono text-lg">
-                      {currencyObj.symbol}
-                      {expense.amount.toFixed(2)}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 px-2 text-destructive -mr-2 mt-1"
-                      onClick={() => handleDelete(expense.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <AnimatePresence initial={false}>
+              {filteredExpenses.map((expense) => (
+                <motion.div
+                  key={expense.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="border-2 border-black shadow-[3px_3px_0_0_#000]">
+                    <CardContent className="p-4 flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-sm">{expense.title}</h4>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(expense.created_at), "MMM d, yyyy")}{" "}
+                          •
+                          <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 border border-gray-200">
+                            {categories.find(
+                              (c) => c.id === expense.category_id
+                            )?.name || "Uncategorized"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold font-mono text-lg">
+                          {currencyObj.symbol}
+                          {expense.amount.toFixed(2)}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-2 text-destructive -mr-2 mt-1"
+                          onClick={() => handleDelete(expense.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
             {filteredExpenses.length === 0 && (
               <div className="text-center p-8 border-2 border-dashed border-gray-300 text-muted-foreground">
                 No records found.

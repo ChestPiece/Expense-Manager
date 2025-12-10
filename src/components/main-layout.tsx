@@ -3,6 +3,7 @@
 import { Navbar } from "@/components/navbar";
 import { cn } from "@/lib/utils";
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
+import { PageTransition } from "@/components/ui/page-transition";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -34,7 +35,7 @@ export function MainLayout({
           className
         )}
       >
-        {children}
+        <PageTransition>{children}</PageTransition>
       </main>
     </div>
   );

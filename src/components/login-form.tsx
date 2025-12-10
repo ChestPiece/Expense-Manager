@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,10 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
 import { LoadingSpinner } from "./loading-spinner";
 import { GoogleIcon, GithubIcon } from "./social-icons";
 
@@ -67,41 +73,17 @@ export function LoginForm({
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError(null);
-
     try {
-      // First check if the user exists with email/password
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser && !existingUser.app_metadata.provider) {
-        setError(
-          "This email is registered with password. Please use email/password login."
-        );
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/callback`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
+          queryParams: { access_type: "offline", prompt: "consent" },
         },
       });
-
-      if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email before logging in");
-        } else {
-          setError(error.message);
-        }
-      }
-    } catch {
-      setError("An unexpected error occurred");
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setGoogleLoading(false);
     }
@@ -110,37 +92,16 @@ export function LoginForm({
   const handleGithubLogin = async () => {
     setGithubLoading(true);
     setError(null);
-
     try {
-      // First check if the user exists with email/password
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser && !existingUser.app_metadata.provider) {
-        setError(
-          "This email is registered with password. Please use email/password login."
-        );
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
           redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/callback`,
         },
       });
-
-      if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email before logging in");
-        } else {
-          setError(error.message);
-        }
-      }
-    } catch {
-      setError("An unexpected error occurred");
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setGithubLoading(false);
     }
@@ -148,38 +109,52 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="welcome-message text-center mb-8">
-        <h1 className="pixel-font text-xl mb-2 text-primary">
-          Welcome to Expense Tracker
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Sign in to see the real action
-        </p>
-      </div>
       <Card className="border-pixel shadow-pixel bg-card">
-        <CardHeader>
-          <CardTitle className="pixel-font text-lg text-primary">
-            Login to your account
+        <CardHeader className="text-center">
+          <CardTitle className="pixel-font text-xl text-primary">
+            Welcome back
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Enter your email below to login to your account
+          <CardDescription>
+            Login with your Apple or Google account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
-            <div className="flex flex-col gap-6">
-              {error && (
-                <div className="text-sm text-destructive text-center font-medium">
-                  {error}
+            <FieldGroup>
+              <Field>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={loading || googleLoading || githubLoading}
+                    className="border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-y-0.5 active:shadow-none"
+                  >
+                    {googleLoading ? <LoadingSpinner /> : <GoogleIcon />}
+                    <span className="ml-2">Google</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleGithubLogin}
+                    disabled={loading || googleLoading || githubLoading}
+                    className="border-2 border-black shadow-[2px_2px_0_0_#000] active:translate-y-0.5 active:shadow-none"
+                  >
+                    {githubLoading ? <LoadingSpinner /> : <GithubIcon />}
+                    <span className="ml-2">GitHub</span>
+                  </Button>
                 </div>
-              )}
-              <div className="grid gap-3">
-                <Label
+              </Field>
+              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card pixel-font text-xs uppercase text-muted-foreground">
+                Or continue with
+              </FieldSeparator>
+              <Field>
+                <FieldLabel
                   htmlFor="email"
                   className="pixel-font text-xs uppercase text-muted-foreground"
                 >
                   Email
-                </Label>
+                </FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -188,20 +163,20 @@ export function LoginForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
+                  className="border-2 border-black shadow-[2px_2px_0_0_#000] focus-visible:ring-0 focus-visible:border-primary"
                 />
-              </div>
-              <div className="grid gap-3">
+              </Field>
+              <Field>
                 <div className="flex items-center">
-                  <Label
+                  <FieldLabel
                     htmlFor="password"
                     className="pixel-font text-xs uppercase text-muted-foreground"
                   >
                     Password
-                  </Label>
+                  </FieldLabel>
                   <a
                     href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-primary"
+                    className="ml-auto text-sm underline-offset-4 hover:underline text-primary"
                     onClick={(e) => {
                       if (onForgotPasswordClick) {
                         e.preventDefault();
@@ -219,14 +194,19 @@ export function LoginForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="border-2 border-border focus-visible:ring-0 focus-visible:border-primary"
+                  className="border-2 border-black shadow-[2px_2px_0_0_#000] focus-visible:ring-0 focus-visible:border-primary"
                 />
-              </div>
-              <div className="flex flex-col gap-3">
+              </Field>
+              {error && (
+                <div className="text-sm text-destructive text-center font-medium">
+                  {error}
+                </div>
+              )}
+              <Field>
                 <Button
                   type="submit"
-                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all hover:bg-primary/90"
                   disabled={loading || googleLoading || githubLoading}
+                  className="w-full pixel-font border-2 border-black shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -237,58 +217,31 @@ export function LoginForm({
                     "Login"
                   )}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all"
-                  onClick={handleGoogleLogin}
-                  disabled={loading || googleLoading || githubLoading}
-                >
-                  {googleLoading ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span>Connecting to Google...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <GoogleIcon />
-                      <span>Login with Google</span>
-                    </div>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full pixel-font border-pixel shadow-pixel active:translate-y-1 active:shadow-none transition-all"
-                  onClick={handleGithubLogin}
-                  disabled={loading || googleLoading || githubLoading}
-                >
-                  {githubLoading ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span>Connecting to GitHub...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <GithubIcon />
-                      <span>Login with GitHub</span>
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a
-                href="/signup"
-                className="underline underline-offset-4 text-primary font-medium"
-              >
-                Sign up
-              </a>
-            </div>
+                <FieldDescription className="text-center">
+                  Don&apos;t have an account?{" "}
+                  <a
+                    href="/signup"
+                    className="underline underline-offset-4 text-primary font-medium"
+                  >
+                    Sign up
+                  </a>
+                </FieldDescription>
+              </Field>
+            </FieldGroup>
           </form>
         </CardContent>
       </Card>
+      <FieldDescription className="px-6 text-center text-xs text-muted-foreground">
+        By clicking continue, you agree to our{" "}
+        <a href="#" className="underline">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href="#" className="underline">
+          Privacy Policy
+        </a>
+        .
+      </FieldDescription>
     </div>
   );
 }
