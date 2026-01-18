@@ -27,6 +27,7 @@ export function SignUpForm({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
   const router = useRouter();
@@ -69,12 +70,7 @@ export function SignUpForm({
       // Show success message
       setError(null);
       setLoading(false);
-      return (
-        <EmailConfirmation
-          email={email}
-          onBackToLogin={() => router.push("/login")}
-        />
-      );
+      setSuccess(true);
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -129,6 +125,15 @@ export function SignUpForm({
       setGithubLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <EmailConfirmation
+        email={email}
+        onBackToLogin={() => router.push("/login")}
+      />
+    );
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
