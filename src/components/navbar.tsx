@@ -29,7 +29,16 @@ export function Navbar() {
       } = await supabase.auth.getUser();
       setUser(user);
     };
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
     getUser();
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   useEffect(() => {
@@ -51,10 +60,9 @@ export function Navbar() {
 
   const handleNavigation = (path: string) => {
     if (path === "/dashboard" && pathname === "/dashboard") {
-      // If already on dashboard, refresh the page
       setIsRefreshing(true);
       router.refresh();
-      setTimeout(() => setIsRefreshing(false), 1000); // Reset after 1 second
+      setTimeout(() => setIsRefreshing(false), 1000);
       return;
     }
 
@@ -63,133 +71,89 @@ export function Navbar() {
     router.push(path);
   };
 
+  // Reset navigating state when pathname changes
+  useEffect(() => {
+    setIsNavigating(false);
+    setIsMenuOpen(false); // Close mobile menu on nav
+  }, [pathname]);
+
   const NavLink = ({
     href,
     children,
+    mobile = false,
   }: {
     href: string;
     children: React.ReactNode;
+    mobile?: boolean;
   }) => {
     const isActive = activeLink === href || pathname === href;
     const isDashboardRefresh =
       href === "/dashboard" && pathname === "/dashboard" && isRefreshing;
+    const isLoading = (isActive && isNavigating) || isDashboardRefresh;
 
     return (
-      <button
+      <Button
+        variant={isActive ? "default" : "ghost"}
         onClick={() => handleNavigation(href)}
-        className={`pixel-text text-gray-300 hover:text-[#ff4500] ${
-          isActive ? "text-[#ff4500]" : ""
-        }`}
         disabled={isNavigating || isRefreshing}
+        className={`w-full justify-start ${!mobile ? "sm:w-auto" : ""}`}
       >
-        {isDashboardRefresh ? (
-          <div className="flex items-center gap-2">
-            <LoadingSpinner />
-            <span>Refreshing...</span>
-          </div>
-        ) : isActive && isNavigating ? (
-          <div className="flex items-center gap-2">
-            <LoadingSpinner />
-            <span>Loading...</span>
-          </div>
-        ) : (
-          children
-        )}
-      </button>
-    );
-  };
-
-  const MobileNavButton = ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => {
-    const isActive = pathname === href;
-    const isDashboardRefresh =
-      href === "/dashboard" && pathname === "/dashboard" && isRefreshing;
-
-    return (
-      <button
-        onClick={() => handleNavigation(href)}
-        className="block pixel-text text-gray-300 hover:text-[#ff4500] py-2 w-full text-left"
-        disabled={isNavigating || isRefreshing}
-      >
-        {isDashboardRefresh ? (
-          <div className="flex items-center gap-2">
-            <LoadingSpinner />
-            <span>Refreshing...</span>
-          </div>
-        ) : isActive && isNavigating ? (
-          <div className="flex items-center gap-2">
-            <LoadingSpinner />
-            <span>Loading...</span>
-          </div>
-        ) : (
-          children
-        )}
-      </button>
+        {isLoading && <LoadingSpinner className="mr-2 h-4 w-4" />}
+        {children}
+      </Button>
     );
   };
 
   return (
-    <nav className="bg-black border-b border-gray-800 sticky top-0 z-50">
+    <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
             <button
               onClick={() => handleNavigation("/")}
-              className="pixel-text text-[#ff4500] text-lg sm:text-xl font-bold hover:opacity-80 transition-opacity"
+              className="font-display text-2xl font-bold text-primary hover:opacity-80 transition-opacity flex items-center gap-2"
               disabled={isNavigating || isRefreshing}
             >
               {activeLink === "/" && isNavigating ? (
-                <div className="flex items-center gap-2">
-                  <LoadingSpinner />
-                  <span>Loading...</span>
-                </div>
+                <LoadingSpinner className="h-5 w-5" />
               ) : (
-                "EXPENSE TRACKER"
+                "EXPENSE.MGR"
               )}
             </button>
           </div>
+
+          {/* Desktop Nav */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
             {user && <NavLink href="/dashboard">Dashboard</NavLink>}
             {user ? (
               <>
-                <span className="pixel-text text-gray-300 text-sm sm:text-base truncate max-w-[150px] sm:max-w-[200px]">
+                <span className="font-mono text-xs text-muted-foreground truncate max-w-[150px]">
                   {user.user_metadata?.full_name || user.email}
                 </span>
                 {mounted && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     aria-label="Toggle Dark Mode"
                     onClick={() =>
                       setTheme(theme === "dark" ? "light" : "dark")
                     }
-                    className="ml-2 p-2 rounded-full hover:bg-gray-800 transition-colors"
                     disabled={isNavigating || isRefreshing}
                   >
                     {theme === "dark" ? (
-                      <Sun size={18} className="text-yellow-400" />
+                      <Sun className="h-5 w-5" />
                     ) : (
-                      <Moon size={18} className="text-gray-400" />
+                      <Moon className="h-5 w-5" />
                     )}
-                  </button>
+                  </Button>
                 )}
                 <Button
-                  variant="outline"
-                  className="cyber-button pixel-text"
+                  variant="destructive"
                   onClick={handleLogout}
                   disabled={isLoggingOut || isNavigating || isRefreshing}
                 >
-                  {isLoggingOut ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span>Logging out...</span>
-                    </div>
-                  ) : (
-                    "Logout"
-                  )}
+                  {isLoggingOut && <LoadingSpinner className="mr-2 h-4 w-4" />}
+                  Logout
                 </Button>
               </>
             ) : (
@@ -197,101 +161,89 @@ export function Navbar() {
                 <NavLink href="/login">Login</NavLink>
                 <NavLink href="/signup">Sign Up</NavLink>
                 {mounted && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     aria-label="Toggle Dark Mode"
                     onClick={() =>
                       setTheme(theme === "dark" ? "light" : "dark")
                     }
-                    className="ml-2 p-2 rounded-full hover:bg-gray-800 transition-colors"
-                    disabled={isNavigating || isRefreshing}
                   >
                     {theme === "dark" ? (
-                      <Sun size={18} className="text-yellow-400" />
+                      <Sun className="h-5 w-5" />
                     ) : (
-                      <Moon size={18} className="text-gray-400" />
+                      <Moon className="h-5 w-5" />
                     )}
-                  </button>
+                  </Button>
                 )}
               </>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
           <div className="sm:hidden flex items-center">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-[#ff4500] transition-colors"
               disabled={isNavigating || isRefreshing}
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="sm:hidden absolute w-full bg-black border-b border-gray-800 animate-in slide-in-from-top duration-200">
-          <div className="px-4 pt-2 pb-3 space-y-1">
-            {user && (
-              <MobileNavButton href="/dashboard">Dashboard</MobileNavButton>
-            )}
-            {user ? (
-              <>
-                <span className="block pixel-text text-gray-300 py-2 text-sm truncate">
-                  {user.user_metadata?.full_name || user.email}
-                </span>
-                {mounted && (
-                  <button
-                    aria-label="Toggle Dark Mode"
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                    className="my-2 p-2 rounded-full hover:bg-gray-800 transition-colors w-full flex justify-center"
-                    disabled={isNavigating || isRefreshing}
-                  >
-                    {theme === "dark" ? (
-                      <Sun size={18} className="text-yellow-400" />
-                    ) : (
-                      <Moon size={18} className="text-gray-400" />
-                    )}
-                  </button>
-                )}
-                <Button
-                  variant="outline"
-                  className="cyber-button pixel-text w-full"
-                  onClick={handleLogout}
-                  disabled={isLoggingOut || isNavigating || isRefreshing}
-                >
-                  {isLoggingOut ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span>Logging out...</span>
-                    </div>
-                  ) : (
-                    "Logout"
-                  )}
-                </Button>
-              </>
-            ) : (
-              <>
-                <MobileNavButton href="/login">Login</MobileNavButton>
-                <MobileNavButton href="/signup">Sign Up</MobileNavButton>
-                {mounted && (
-                  <button
-                    aria-label="Toggle Dark Mode"
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                    className="my-2 p-2 rounded-full hover:bg-gray-800 transition-colors w-full flex justify-center"
-                    disabled={isNavigating || isRefreshing}
-                  >
-                    {theme === "dark" ? (
-                      <Sun size={18} className="text-yellow-400" />
-                    ) : (
-                      <Moon size={18} className="text-gray-400" />
-                    )}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
+        <div className="sm:hidden absolute w-full bg-background border-b border-border p-4 space-y-3 shadow-lg">
+          {user ? (
+            <>
+              <div className="px-2 py-1 font-mono text-xs text-muted-foreground border-b border-border/50 pb-2 mb-2">
+                Signed in as: <br />
+                {user.user_metadata?.full_name || user.email}
+              </div>
+              <NavLink href="/dashboard" mobile>
+                Dashboard
+              </NavLink>
+              <Button
+                variant="destructive"
+                className="w-full justify-start"
+                onClick={handleLogout}
+                disabled={isLoggingOut || isNavigating || isRefreshing}
+              >
+                {isLoggingOut && <LoadingSpinner className="mr-2 h-4 w-4" />}
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <NavLink href="/login" mobile>
+                Login
+              </NavLink>
+              <NavLink href="/signup" mobile>
+                Sign Up
+              </NavLink>
+            </>
+          )}
+          {mounted && (
+            <Button
+              variant="outline"
+              className="w-full justify-start mt-2"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <Sun className="mr-2 h-4 w-4" />
+              ) : (
+                <Moon className="mr-2 h-4 w-4" />
+              )}
+              Switch to {theme === "dark" ? "Light" : "Dark"} Mode
+            </Button>
+          )}
         </div>
       )}
     </nav>

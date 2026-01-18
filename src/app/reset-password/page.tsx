@@ -5,7 +5,16 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { Navbar } from "@/components/navbar";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -15,9 +24,6 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
-
-  // You might need to handle the access token from the URL here
-  // Supabase typically handles this within the updateUser method if called on the correct page
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +38,6 @@ export default function ResetPasswordPage() {
     setError(null);
 
     try {
-      // Supabase's updateUser will use the context from the reset password URL
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
@@ -40,10 +45,8 @@ export default function ResetPasswordPage() {
       if (error) throw error;
 
       setMessage(
-        "Your password has been reset successfully. You can now log in with your new password."
+        "Your password has been reset successfully. You can now log in with your new password.",
       );
-      // Redirect to login page after a delay or on button click
-      // router.push('/login');
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -52,90 +55,92 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="pixel-text text-2xl sm:text-3xl font-bold text-[#ff4500] mb-2">
-            Reset Password
-          </h1>
-          <p className="text-gray-400 text-sm sm:text-base">
-            Enter your new password
-          </p>
-          {message && (
-            <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <p className="text-green-500 text-sm">{message}</p>
-              {/* Optional: Add a button to redirect to login */}
-              {!loading && (
-                <Button
-                  variant="outline"
-                  className="cyber-button pixel-text mt-4"
-                  onClick={() => router.push("/login")}
-                >
-                  Go to Login
-                </Button>
-              )}
-            </div>
-          )}
-          {error && (
-            <div className="pixel-text text-red-500 text-sm text-center bg-red-500/10 p-2 rounded-lg">
-              {error}
-            </div>
-          )}
-        </div>
-        {!message && (
-          <form onSubmit={handlePasswordReset} className="space-y-4">
-            <div>
-              <label
-                htmlFor="password"
-                className="pixel-text text-sm text-gray-400 block mb-1"
-              >
-                New Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="cyber-input pixel-text w-full px-4 py-2 rounded-lg"
-                required
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="confirm-password"
-                className="pixel-text text-sm text-gray-400 block mb-1"
-              >
-                Confirm New Password
-              </label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="cyber-input pixel-text w-full px-4 py-2 rounded-lg"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="cyber-button pixel-text w-full py-2 text-sm sm:text-base relative"
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <LoadingSpinner className="w-5 h-5" />
-                  <span>Resetting Password...</span>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Navbar />
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-4">
+            <h1 className="font-display text-3xl font-bold mb-2">
+              EXPENSE.MGR
+            </h1>
+            <p className="text-muted-foreground">Secure your account</p>
+          </div>
+          <Card className="border-2 border-border retro-shadow bg-card">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold">
+                Reset Password
+              </CardTitle>
+              <CardDescription>Enter your new password below</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {message ? (
+                <div className="text-center space-y-4">
+                  <div className="text-sm font-bold text-green-600 p-4 border border-green-600/20 bg-green-500/10 rounded-none">
+                    {message}
+                  </div>
+                  <Button
+                    className="w-full font-bold"
+                    onClick={() => router.push("/login")}
+                  >
+                    Go to Login
+                  </Button>
                 </div>
               ) : (
-                "Reset Password"
+                <form onSubmit={handlePasswordReset}>
+                  <div className="flex flex-col gap-6">
+                    {error && (
+                      <div className="text-sm font-bold text-destructive text-center p-2 border border-destructive/20 bg-destructive/10">
+                        {error}
+                      </div>
+                    )}
+                    <div className="grid gap-3">
+                      <Label htmlFor="password">New Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="rounded-none border-border"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="confirm-password">
+                        Confirm New Password
+                      </Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="rounded-none border-border"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full font-bold"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <LoadingSpinner className="h-4 w-4" />
+                          <span>Resetting Password...</span>
+                        </div>
+                      ) : (
+                        "Reset Password"
+                      )}
+                    </Button>
+                  </div>
+                </form>
               )}
-            </Button>
-          </form>
-        )}
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 }

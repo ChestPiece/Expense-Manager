@@ -1,18 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Press_Start_2P } from "next/font/google";
+import { Outfit, Space_Mono, Syne } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 
-const inter = Inter({ subsets: ["latin"] });
-const pressStart2P = Press_Start_2P({
-  weight: "400",
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-press-start-2p",
+  variable: "--font-sans",
+});
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-display",
 });
 
 export const metadata: Metadata = {
-  title: "Expense Tracker",
-  description: "A cyberpunk-themed expense tracking application",
+  title: "Expense Manager",
+  description: "A retro-styled expense tracking application",
 };
 
 export const viewport: Viewport = {
@@ -29,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
       <body
-        className={`${inter.className} ${pressStart2P.variable} min-h-full flex flex-col`}
+        className={`${outfit.variable} ${spaceMono.variable} ${syne.variable} font-sans min-h-full flex flex-col bg-background text-foreground antialiased`}
       >
         <ThemeProvider
           attribute="class"

@@ -43,25 +43,6 @@ export function SignUpForm({
     setLoading(true);
 
     try {
-      // Check if user already exists with any provider
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser) {
-        if (existingUser.app_metadata.provider) {
-          setError(
-            `This email is already registered with ${existingUser.app_metadata.provider}. Please use ${existingUser.app_metadata.provider} login.`
-          );
-        } else {
-          setError(
-            "This email is already registered. Please use email/password login."
-          );
-        }
-        return;
-      }
-
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -76,10 +57,10 @@ export function SignUpForm({
       if (signUpError) {
         if (signUpError.message.includes("User already registered")) {
           setError(
-            "This email is already registered. Please use login instead."
+            "This email is already registered. Please use login instead.",
           );
         } else {
-        setError(signUpError.message);
+          setError(signUpError.message);
         }
         return;
       }
@@ -111,29 +92,6 @@ export function SignUpForm({
     setError(null);
 
     try {
-      // Check if user already exists with any provider
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser) {
-        if (existingUser.app_metadata.provider === "google") {
-          setError(
-            "This email is already registered with Google. Please use Google login."
-          );
-        } else if (existingUser.app_metadata.provider) {
-          setError(
-            `This email is already registered with ${existingUser.app_metadata.provider}. Please use ${existingUser.app_metadata.provider} login.`
-          );
-        } else {
-          setError(
-            "This email is already registered with password. Please use email/password login."
-          );
-        }
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -160,29 +118,6 @@ export function SignUpForm({
     setError(null);
 
     try {
-      // Check if user already exists with any provider
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser) {
-        if (existingUser.app_metadata.provider === "github") {
-          setError(
-            "This email is already registered with GitHub. Please use GitHub login."
-          );
-        } else if (existingUser.app_metadata.provider) {
-          setError(
-            `This email is already registered with ${existingUser.app_metadata.provider}. Please use ${existingUser.app_metadata.provider} login.`
-          );
-        } else {
-          setError(
-            "This email is already registered with password. Please use email/password login."
-          );
-        }
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
@@ -202,20 +137,14 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="welcome-message text-center mb-8">
-        <h1 className="pixel-text text-xl mb-2 text-[#ff4500]">
-          Welcome to Expense Tracker
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Sign up to see the real action
-        </p>
+      <div className="text-center mb-4">
+        <h1 className="font-display text-3xl font-bold mb-2">EXPENSE.MGR</h1>
+        <p className="text-muted-foreground">Sign up to handle your finances</p>
       </div>
-      <Card className="cyber-card">
+      <Card className="border-2 border-border retro-shadow bg-card">
         <CardHeader>
-          <CardTitle className="pixel-text text-lg text-[#ff4500]">
-            Create an account
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardTitle className="text-xl font-bold">Create an account</CardTitle>
+          <CardDescription>
             Enter your details below to create your account
           </CardDescription>
         </CardHeader>
@@ -223,14 +152,12 @@ export function SignUpForm({
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               {error && (
-                <div className="text-sm text-red-500 text-center glitch">
+                <div className="text-sm font-bold text-destructive text-center p-2 border border-destructive/20 bg-destructive/10">
                   {error}
                 </div>
               )}
               <div className="grid gap-3">
-                <Label htmlFor="name" className="pixel-text text-sm">
-                  Full Name
-                </Label>
+                <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -239,13 +166,11 @@ export function SignUpForm({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="rounded-none border-border"
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="email" className="pixel-text text-sm">
-                  Email
-                </Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -254,13 +179,11 @@ export function SignUpForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="rounded-none border-border"
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="password" className="pixel-text text-sm">
-                  Password
-                </Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -268,13 +191,11 @@ export function SignUpForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="rounded-none border-border"
                 />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="confirmPassword" className="pixel-text text-sm">
-                  Confirm Password
-                </Label>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -282,18 +203,18 @@ export function SignUpForm({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="rounded-none border-border"
                 />
               </div>
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  className="w-full cyber-button pixel-text"
+                  className="w-full font-bold"
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <LoadingSpinner />
+                      <LoadingSpinner className="h-4 w-4" />
                       <span>Creating account...</span>
                     </div>
                   ) : (
@@ -303,14 +224,14 @@ export function SignUpForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button pixel-text"
+                  className="w-full"
                   onClick={handleGoogleSignUp}
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {googleLoading ? (
                     <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span>Connecting to Google...</span>
+                      <LoadingSpinner className="h-4 w-4" />
+                      <span>Connecting...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -322,14 +243,14 @@ export function SignUpForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button pixel-text"
+                  className="w-full"
                   onClick={handleGithubSignUp}
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {githubLoading ? (
                     <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span>Connecting to GitHub...</span>
+                      <LoadingSpinner className="h-4 w-4" />
+                      <span>Connecting...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -344,7 +265,7 @@ export function SignUpForm({
               Already have an account?{" "}
               <a
                 href="/login"
-                className="underline underline-offset-4 text-[#ff4500]"
+                className="underline underline-offset-4 font-bold hover:text-primary"
               >
                 Login
               </a>

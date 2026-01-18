@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoadingSpinner } from "./loading-spinner";
 import { GoogleIcon, GithubIcon } from "./social-icons";
@@ -25,12 +26,13 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
+  const router = useRouter();
   const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -39,19 +41,11 @@ export function LoginForm({
       });
 
       if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email before logging in");
-        } else if (error.message.includes("Invalid login credentials")) {
-          setError("Invalid email or password");
-        } else {
-          setError(error.message);
-        }
-        return;
+        setError(error.message);
+      } else {
+        router.push("/dashboard");
+        router.refresh();
       }
-
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 500);
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -64,19 +58,6 @@ export function LoginForm({
     setError(null);
 
     try {
-      // First check if the user exists with email/password
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser && !existingUser.app_metadata.provider) {
-        setError(
-          "This email is registered with password. Please use email/password login."
-        );
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -89,11 +70,7 @@ export function LoginForm({
       });
 
       if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email before logging in");
-        } else {
-          setError(error.message);
-        }
+        setError(error.message);
       }
     } catch {
       setError("An unexpected error occurred");
@@ -107,19 +84,6 @@ export function LoginForm({
     setError(null);
 
     try {
-      // First check if the user exists with email/password
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers();
-      const existingUser = users?.find((user) => user.email === email);
-
-      if (existingUser && !existingUser.app_metadata.provider) {
-        setError(
-          "This email is registered with password. Please use email/password login."
-        );
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
@@ -128,11 +92,7 @@ export function LoginForm({
       });
 
       if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email before logging in");
-        } else {
-          setError(error.message);
-        }
+        setError(error.message);
       }
     } catch {
       setError("An unexpected error occurred");
@@ -143,20 +103,14 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="welcome-message text-center mb-8">
-        <h1 className="pixel-text text-xl mb-2 text-[#ff4500]">
-          Welcome to Expense Tracker
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Sign in to see the real action
-        </p>
+      <div className="text-center mb-4">
+        <h1 className="font-display text-3xl font-bold mb-2">EXPENSE.MGR</h1>
+        <p className="text-muted-foreground">Login to your account</p>
       </div>
-      <Card className="cyber-card">
+      <Card className="border-2 border-border retro-shadow bg-card">
         <CardHeader>
-          <CardTitle className="pixel-text text-lg text-[#ff4500]">
-            Login to your account
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardTitle className="text-xl font-bold">Welcome back</CardTitle>
+          <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
@@ -164,14 +118,12 @@ export function LoginForm({
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               {error && (
-                <div className="text-sm text-red-500 text-center glitch">
+                <div className="text-sm font-bold text-destructive text-center p-2 border border-destructive/20 bg-destructive/10">
                   {error}
                 </div>
               )}
               <div className="grid gap-3">
-                <Label htmlFor="email" className="pixel-text text-sm">
-                  Email
-                </Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -180,17 +132,15 @@ export function LoginForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="rounded-none border-border"
                 />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
-                  <Label htmlFor="password" className="pixel-text text-sm">
-                    Password
-                  </Label>
+                  <Label htmlFor="password">Password</Label>
                   <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-[#ff4500]"
+                    href="/forgot-password"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
                     Forgot your password?
                   </a>
@@ -202,18 +152,18 @@ export function LoginForm({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading || googleLoading || githubLoading}
-                  className="cyber-input"
+                  className="rounded-none border-border"
                 />
               </div>
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  className="w-full cyber-button bg-[#ff4500] hover:bg-[#ff0000]"
+                  className="w-full font-bold"
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
-                      <LoadingSpinner />
+                      <LoadingSpinner className="h-4 w-4" />
                       <span>Logging in...</span>
                     </div>
                   ) : (
@@ -223,42 +173,38 @@ export function LoginForm({
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button"
+                  className="w-full"
                   onClick={handleGoogleLogin}
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {googleLoading ? (
                     <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span className="pixel-text">
-                        Connecting to Google...
-                      </span>
+                      <LoadingSpinner className="h-4 w-4" />
+                      <span>Connecting...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <GoogleIcon />
-                      <span className="pixel-text">Login with Google</span>
+                      <span>Login with Google</span>
                     </div>
                   )}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full cyber-button"
+                  className="w-full"
                   onClick={handleGithubLogin}
                   disabled={loading || googleLoading || githubLoading}
                 >
                   {githubLoading ? (
                     <div className="flex items-center gap-2">
-                      <LoadingSpinner />
-                      <span className="pixel-text">
-                        Connecting to GitHub...
-                      </span>
+                      <LoadingSpinner className="h-4 w-4" />
+                      <span>Connecting...</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <GithubIcon />
-                      <span className="pixel-text">Login with GitHub</span>
+                      <span>Login with GitHub</span>
                     </div>
                   )}
                 </Button>
@@ -268,7 +214,7 @@ export function LoginForm({
               Don&apos;t have an account?{" "}
               <a
                 href="/signup"
-                className="underline underline-offset-4 text-[#ff4500]"
+                className="underline underline-offset-4 font-bold hover:text-primary"
               >
                 Sign up
               </a>
