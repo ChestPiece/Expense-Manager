@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   const expenses = expensesRes.data || [];
   const categories = categoriesRes.data || [];
   const currencies = currenciesRes.data || [];
-  const initialCurrency = userPrefRes.data?.currency_code || "USD";
+  const initialCurrency = userPrefRes.data?.currency_code || "PKR";
 
   return (
     <DashboardClient

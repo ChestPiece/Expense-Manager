@@ -150,9 +150,9 @@ export function DashboardClient({
 
   // Derived
   const currencyObj = initialCurrencies.find((c) => c.code === currency) || {
-    code: "USD",
-    symbol: "$",
-    name: "US Dollar",
+    code: "PKR",
+    name: "Pakistani Rupee",
+    symbol: "Rs",
   };
 
   const totalBudget = categories.reduce(

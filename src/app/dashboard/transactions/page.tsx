@@ -24,7 +24,7 @@ export default function TransactionsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const supabase = createClient();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [currency, setCurrency] = useState<string>("USD");
+  const [currency, setCurrency] = useState<string>("PKR");
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -80,9 +80,9 @@ export default function TransactionsPage() {
   }
 
   const currencyObj = currencies.find((c) => c.code === currency) || {
-    code: "USD",
-    symbol: "$",
-    name: "US Dollar",
+    code: "PKR",
+    symbol: "Rs",
+    name: "Pakistani Rupee",
   };
 
   if (!userId || loading) {

@@ -174,4 +174,16 @@
     box-shadow: 2px 2px 0px 0px var(--border);
     transition: none;
   }
+
+  /* Robust Disabled State - No Transparency Glitch */
+  .retro-shadow:disabled,
+  .retro-shadow[disabled] {
+    opacity: 1; /* Keep solid */
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    cursor: not-allowed;
+    /* Maintain shadow but maybe lighter or same */
+    box-shadow: 4px 4px 0px 0px var(--border);
+    transform: none !important; /* Prevent hover/active movement */
+  }
 }

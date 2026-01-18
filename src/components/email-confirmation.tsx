@@ -12,11 +12,28 @@ import {
 import { Mail, CheckCircle, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { LoadingSpinner } from "./loading-spinner";
+import { ExternalLink } from "lucide-react";
 
 interface EmailConfirmationProps {
   email: string;
   onBackToLogin: () => void;
 }
+
+const getEmailProviderLink = (email: string) => {
+  const domain = email.split("@")[1]?.toLowerCase();
+
+  const providers: Record<string, string> = {
+    "gmail.com": "https://mail.google.com/",
+    "outlook.com": "https://outlook.live.com/",
+    "hotmail.com": "https://outlook.live.com/",
+    "yahoo.com": "https://mail.yahoo.com/",
+    "proton.me": "https://mail.proton.me/",
+    "protonmail.com": "https://mail.proton.me/",
+    "icloud.com": "https://www.icloud.com/mail/",
+  };
+
+  return providers[domain] || `mailto:${email}`;
+};
 
 export function EmailConfirmation({
   email,
@@ -118,6 +135,14 @@ export function EmailConfirmation({
 
           <div className="flex flex-col gap-3">
             <Button
+              className="w-full font-bold"
+              onClick={() => window.open(getEmailProviderLink(email), "_blank")}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open Email App
+            </Button>
+
+            <Button
               variant="outline"
               className="w-full"
               onClick={handleResendEmail}
@@ -135,7 +160,7 @@ export function EmailConfirmation({
               )}
             </Button>
 
-            <Button onClick={onBackToLogin} className="w-full font-bold">
+            <Button variant="ghost" onClick={onBackToLogin} className="w-full">
               Back to Login
             </Button>
           </div>

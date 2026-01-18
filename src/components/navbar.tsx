@@ -7,7 +7,6 @@ import { Menu, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
-import { LoadingSpinner } from "./loading-spinner";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -95,10 +94,12 @@ export function Navbar() {
       <Button
         variant={isActive ? "default" : "ghost"}
         onClick={() => handleNavigation(href)}
-        disabled={isNavigating || isRefreshing}
+        isLoading={isLoading}
+        // disabled state checks are now partly handled by isLoading inside Button,
+        // but we still want to block if GLOBAL nav/refresh/logout is happening
+        disabled={(isNavigating || isRefreshing) && !isLoading}
         className={`w-full justify-start ${!mobile ? "sm:w-auto" : ""}`}
       >
-        {isLoading && <LoadingSpinner className="mr-2 h-4 w-4" />}
         {children}
       </Button>
     );
@@ -114,11 +115,11 @@ export function Navbar() {
               className="font-display text-2xl font-bold text-primary hover:opacity-80 transition-opacity flex items-center gap-2"
               disabled={isNavigating || isRefreshing}
             >
-              {activeLink === "/" && isNavigating ? (
-                <LoadingSpinner className="h-5 w-5" />
-              ) : (
-                "EXPENSE.MGR"
-              )}
+              {/* This custom button logic is fine to keep separate from Shadcn Button for now */}
+              {activeLink === "/" && isNavigating
+                ? // We keep pure loading spinner here or replace with new button eventually
+                  "EXPENSE.MGR..."
+                : "EXPENSE.MGR"}
             </button>
           </div>
 
@@ -150,9 +151,9 @@ export function Navbar() {
                 <Button
                   variant="destructive"
                   onClick={handleLogout}
-                  disabled={isLoggingOut || isNavigating || isRefreshing}
+                  isLoading={isLoggingOut}
+                  disabled={isNavigating || isRefreshing}
                 >
-                  {isLoggingOut && <LoadingSpinner className="mr-2 h-4 w-4" />}
                   Logout
                 </Button>
               </>
@@ -214,9 +215,9 @@ export function Navbar() {
                 variant="destructive"
                 className="w-full justify-start"
                 onClick={handleLogout}
-                disabled={isLoggingOut || isNavigating || isRefreshing}
+                isLoading={isLoggingOut}
+                disabled={isNavigating || isRefreshing}
               >
-                {isLoggingOut && <LoadingSpinner className="mr-2 h-4 w-4" />}
                 Logout
               </Button>
             </>
