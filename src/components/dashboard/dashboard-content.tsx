@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { LoadingSpinner } from "@/components/loading-spinner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
@@ -23,12 +22,20 @@ interface Category {
   id: string;
   user_id: string;
   name: string;
-  budget: number;
+  budget?: number | null;
+}
+
+interface Expense {
+  id: string;
+  title: string;
+  amount: number;
+  category_id?: string | null;
+  created_at: string;
 }
 
 interface DashboardClientProps {
   initialUserId: string;
-  initialExpenses: any[];
+  initialExpenses: Expense[];
   initialCategories: Category[];
   initialCurrency: string;
   initialCurrencies: Currency[];
@@ -46,11 +53,9 @@ export function DashboardClient({
   const router = useRouter();
 
   // State
-  const [expenses, setExpenses] = useState(initialExpenses);
-  const [categories, setCategories] = useState(initialCategories);
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [currency, setCurrency] = useState(initialCurrency);
-  const [currencyLoading, setCurrencyLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // Dialogs
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -175,7 +180,6 @@ export function DashboardClient({
           currency={currency}
           currencies={initialCurrencies}
           onCurrencyChange={handleCurrencyChange}
-          loading={currencyLoading}
         />
       </div>
 

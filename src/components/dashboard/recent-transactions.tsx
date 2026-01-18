@@ -14,9 +14,22 @@ import { format } from "date-fns";
 import { Trash2, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
+interface Expense {
+  id: string;
+  title: string;
+  amount: number;
+  category_id?: string | null;
+  created_at: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface RecentTransactionsProps {
-  expenses: any[];
-  categories: any[];
+  expenses: Expense[];
+  categories: Category[];
   currencySymbol: string;
   onDelete: (id: string) => void;
 }
@@ -85,7 +98,7 @@ export function RecentTransactions({
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="inline-flex items-center rounded-none border border-border px-1.5 py-0.5 text-[10px] sm:text-xs font-mono bg-background">
-                      {categories.find((c: any) => c.id === expense.category_id)
+                      {categories.find((c) => c.id === expense.category_id)
                         ?.name || "Uncategorized"}
                     </span>
                   </TableCell>

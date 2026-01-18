@@ -1,11 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
+
+interface Expense {
+  id: string;
+  amount: number;
+  category_id?: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  budget?: number | null;
+}
 
 interface StatsCardsProps {
-  expenses: any[]; // Using any for brevity, can refine
-  categories: any[];
+  expenses: Expense[];
+  categories: Category[];
   currencySymbol: string;
-  totalBudget?: number; // Optional
+  currencySymbol: string;
 }
 
 export function StatsCards({
@@ -38,7 +50,7 @@ export function StatsCards({
     ? categories.find((c) => c.id === topCategoryId)?.name
     : "N/A";
 
-  const totalBudget = categories.reduce((sum, c) => sum + c.budget, 0);
+  const totalBudget = categories.reduce((sum, c) => sum + (c.budget ?? 0), 0);
   const remainingBudget = totalBudget - totalSpent;
 
   return (

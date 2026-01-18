@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-
 interface Currency {
   code: string;
   symbol: string;

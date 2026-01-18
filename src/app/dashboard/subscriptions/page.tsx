@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SubscriptionList } from "@/components/dashboard/subscription-list";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 
 export default async function SubscriptionsPage() {
   const supabase = await createClient();
@@ -31,10 +30,14 @@ export default async function SubscriptionsPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardHeader
-        title="Subscriptions"
-        description={`Total Fixed Monthly Cost: $${totalMonthly.toFixed(2)}`}
-      />
+      <div>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-tight text-foreground">
+          Subscriptions
+        </h1>
+        <p className="font-mono text-sm text-muted-foreground">
+          Total Fixed Monthly Cost: ${totalMonthly.toFixed(2)}
+        </p>
+      </div>
       <SubscriptionList
         initialSubscriptions={subscriptions || []}
         userId={user.id}

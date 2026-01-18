@@ -5,17 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Pencil, Trash2, Plus, Loader2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 interface Category {
   id: string;
   name: string;
-  budget: number;
+  budget?: number | null;
 }
 
 interface Expense {
-  category_id?: string;
+  category_id?: string | null;
   amount: number;
 }
 
@@ -41,11 +41,14 @@ export function CategoryBudgets({
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategory || !newBudget) return;
+    const budgetVal = parseFloat(newBudget);
+    if (isNaN(budgetVal)) return;
+
     setIsAdding(true);
     try {
       await onAddCategory({
         name: newCategory,
-        budget: parseFloat(newBudget),
+        budget: budgetVal,
       });
       setNewCategory("");
       setNewBudget("");
@@ -68,9 +71,10 @@ export function CategoryBudgets({
             const spent = expenses
               .filter((e) => e.category_id === cat.id)
               .reduce((sum, e) => sum + e.amount, 0);
+            const budget = cat.budget ?? 0;
             const progress =
-              cat.budget > 0 ? Math.min((spent / cat.budget) * 100, 100) : 0;
-            const over = spent > cat.budget;
+              budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+            const over = budget > 0 && spent > budget;
 
             return (
               <div key={cat.id} className="space-y-1 group">
@@ -80,7 +84,7 @@ export function CategoryBudgets({
                     <span className="font-mono text-muted-foreground">
                       {currencySymbol}
                       {spent.toFixed(0)} / {currencySymbol}
-                      {cat.budget}
+                      {budget}
                     </span>
                     <Button
                       variant="ghost"

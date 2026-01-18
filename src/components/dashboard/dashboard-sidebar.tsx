@@ -3,14 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Receipt,
-  Settings,
-  PieChart,
-  Home,
-  LogOut,
-} from "lucide-react";
+import { LayoutDashboard, Receipt, PieChart, Home, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";

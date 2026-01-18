@@ -15,9 +15,22 @@ import { format } from "date-fns";
 import { Trash2, Search, ArrowUpDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+interface Expense {
+  id: string;
+  title: string;
+  amount: number;
+  category_id?: string | null;
+  created_at: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface TransactionListProps {
-  expenses: any[];
-  categories: any[];
+  expenses: Expense[];
+  categories: Category[];
   currencySymbol: string;
   onDelete: (id: string) => void;
 }

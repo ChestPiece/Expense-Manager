@@ -39,9 +39,9 @@ export default async function DashboardPage() {
     <DashboardClient
       initialUserId={user.id}
       initialExpenses={expenses}
-      initialCategories={categories as any[]}
+      initialCategories={categories}
       initialCurrency={initialCurrency}
-      initialCurrencies={currencies as any[]}
+      initialCurrencies={currencies}
     />
   );
 }
