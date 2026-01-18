@@ -17,7 +17,6 @@ interface StatsCardsProps {
   expenses: Expense[];
   categories: Category[];
   currencySymbol: string;
-  currencySymbol: string;
 }
 
 export function StatsCards({
@@ -36,7 +35,7 @@ export function StatsCards({
     }
   });
 
-  let topCategoryId = null;
+  let topCategoryId: string | null = null;
   let maxSpent = 0;
 
   Object.entries(categoryTotals).forEach(([id, amount]) => {
