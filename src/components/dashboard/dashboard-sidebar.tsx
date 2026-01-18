@@ -28,6 +28,11 @@ export function DashboardSidebar({ className, onNavigate }: SidebarProps) {
   const links = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/transactions", label: "Transactions", icon: Receipt },
+    {
+      href: "/dashboard/subscriptions",
+      label: "Subscriptions",
+      icon: PieChart,
+    },
     // { href: "/dashboard/budgets", label: "Budgets", icon: PieChart },
     // { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];

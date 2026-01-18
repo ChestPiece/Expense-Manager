@@ -9,7 +9,9 @@ import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { CategoryBudgets } from "@/components/dashboard/category-budgets";
 import { AddExpenseForm } from "@/components/dashboard/add-expense-form";
 import { CurrencySelector } from "@/components/dashboard/currency-selector";
+import { BudgetProgress } from "@/components/dashboard/budget-progress";
 import { useRouter } from "next/navigation";
+import { isSameMonth, parseISO } from "date-fns";
 
 interface Currency {
   code: string;
@@ -148,6 +150,15 @@ export function DashboardClient({
     name: "US Dollar",
   };
 
+  const totalBudget = categories.reduce(
+    (sum, cat) => sum + (cat.budget || 0),
+    0,
+  );
+  const now = new Date();
+  const totalSpent = expenses
+    .filter((e) => isSameMonth(parseISO(e.created_at), now))
+    .reduce((sum, e) => sum + Number(e.amount), 0);
+
   return (
     <div className="space-y-6">
       {/* Top Bar */}
@@ -203,7 +214,12 @@ export function DashboardClient({
         </div>
 
         {/* Right Column (Budgets) */}
-        <div className="xl:col-span-1 h-full">
+        <div className="xl:col-span-1 h-full space-y-6">
+          <BudgetProgress
+            totalSpent={totalSpent}
+            totalBudget={totalBudget}
+            currencySymbol={currencyObj.symbol}
+          />
           <CategoryBudgets
             categories={categories}
             expenses={expenses}
