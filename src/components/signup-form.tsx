@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoadingSpinner } from "./loading-spinner";
 import { GoogleIcon, GithubIcon } from "./social-icons";
+import { EmailConfirmation } from "./email-confirmation";
 
 export function SignUpForm({
   className,
@@ -69,16 +70,10 @@ export function SignUpForm({
       setError(null);
       setLoading(false);
       return (
-        <div className="text-center">
-          <h2 className="text-lg font-bold mb-4">Check your email</h2>
-          <p className="text-muted-foreground mb-4">
-            We&apos;ve sent you a confirmation email. Please check your inbox
-            and click the confirmation link to complete your registration.
-          </p>
-          <Button variant="outline" onClick={() => router.push("/login")}>
-            Go to Login
-          </Button>
-        </div>
+        <EmailConfirmation
+          email={email}
+          onBackToLogin={() => router.push("/login")}
+        />
       );
     } catch {
       setError("An unexpected error occurred");

@@ -172,5 +172,6 @@
   .retro-shadow-active:active {
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0px 0px var(--border);
+    transition: none;
   }
 }
