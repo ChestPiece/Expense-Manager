@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, PlusCircle, History } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 interface Category {
@@ -13,6 +13,9 @@ interface Category {
   name: string;
   budget?: number | null;
 }
+
+import { TopUpDialog } from "@/components/dashboard/top-up-dialog";
+import { BudgetHistoryDialog } from "@/components/dashboard/budget-history-dialog";
 
 interface Expense {
   category_id?: string | null;
@@ -25,6 +28,7 @@ interface CategoryBudgetsProps {
   currencySymbol: string;
   onAddCategory: (category: { name: string; budget: number }) => Promise<void>;
   onDeleteCategory: (id: string) => Promise<void>;
+  onTopUp: (categoryId: string, amount: number, note: string) => Promise<void>;
 }
 
 export function CategoryBudgets({
@@ -33,10 +37,13 @@ export function CategoryBudgets({
   currencySymbol,
   onAddCategory,
   onDeleteCategory,
+  onTopUp,
 }: CategoryBudgetsProps) {
   const [newCategory, setNewCategory] = useState("");
   const [newBudget, setNewBudget] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [topUpCategory, setTopUpCategory] = useState<Category | null>(null);
+  const [historyCategory, setHistoryCategory] = useState<Category | null>(null);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +101,23 @@ export function CategoryBudgets({
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-primary"
+                      onClick={() => setTopUpCategory(cat)}
+                    >
+                      <PlusCircle className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
+                      onClick={() => setHistoryCategory(cat)}
+                      title="History"
+                    >
+                      <History className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
                 <Progress
@@ -149,6 +173,28 @@ export function CategoryBudgets({
           </form>
         </div>
       </CardContent>
+
+      {topUpCategory && (
+        <TopUpDialog
+          open={!!topUpCategory}
+          onOpenChange={(open) => !open && setTopUpCategory(null)}
+          categoryName={topUpCategory.name}
+          currencySymbol={currencySymbol}
+          onConfirm={async (amount, note) => {
+            await onTopUp(topUpCategory.id, amount, note);
+          }}
+        />
+      )}
+
+      {historyCategory && (
+        <BudgetHistoryDialog
+          open={!!historyCategory}
+          onOpenChange={(open) => !open && setHistoryCategory(null)}
+          categoryId={historyCategory.id}
+          categoryName={historyCategory.name}
+          currencySymbol={currencySymbol}
+        />
+      )}
     </Card>
   );
 }

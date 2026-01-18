@@ -14,7 +14,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LoadingSpinner } from "./loading-spinner";
-import { GoogleIcon, GithubIcon } from "./social-icons";
 import { EmailConfirmation } from "./email-confirmation";
 
 export function SignUpForm({
@@ -28,8 +27,7 @@ export function SignUpForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [githubLoading, setGithubLoading] = useState(false);
+
   const router = useRouter();
   const supabase = createClient();
 
@@ -78,54 +76,6 @@ export function SignUpForm({
     }
   };
 
-  const handleGoogleSignUp = async () => {
-    setGoogleLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/callback`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
-        },
-      });
-
-      if (error) {
-        setError(error.message);
-      }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  const handleGithubSignUp = async () => {
-    setGithubLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/callback`,
-        },
-      });
-
-      if (error) {
-        setError(error.message);
-      }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setGithubLoading(false);
-    }
-  };
-
   if (success) {
     return (
       <EmailConfirmation
@@ -165,7 +115,7 @@ export function SignUpForm({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  disabled={loading || googleLoading || githubLoading}
+                  disabled={loading}
                   className="rounded-none border-border"
                 />
               </div>
@@ -178,7 +128,7 @@ export function SignUpForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading || googleLoading || githubLoading}
+                  disabled={loading}
                   className="rounded-none border-border"
                 />
               </div>
@@ -190,7 +140,7 @@ export function SignUpForm({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading || googleLoading || githubLoading}
+                  disabled={loading}
                   className="rounded-none border-border"
                 />
               </div>
@@ -202,7 +152,7 @@ export function SignUpForm({
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={loading || googleLoading || githubLoading}
+                  disabled={loading}
                   className="rounded-none border-border"
                 />
               </div>
@@ -210,7 +160,7 @@ export function SignUpForm({
                 <Button
                   type="submit"
                   className="w-full font-bold"
-                  disabled={loading || googleLoading || githubLoading}
+                  disabled={loading}
                 >
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -219,44 +169,6 @@ export function SignUpForm({
                     </div>
                   ) : (
                     "Create Account"
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleSignUp}
-                  disabled={loading || googleLoading || githubLoading}
-                >
-                  {googleLoading ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner className="h-4 w-4" />
-                      <span>Connecting...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <GoogleIcon />
-                      <span>Sign up with Google</span>
-                    </div>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGithubSignUp}
-                  disabled={loading || googleLoading || githubLoading}
-                >
-                  {githubLoading ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner className="h-4 w-4" />
-                      <span>Connecting...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <GithubIcon />
-                      <span>Sign up with GitHub</span>
-                    </div>
                   )}
                 </Button>
               </div>

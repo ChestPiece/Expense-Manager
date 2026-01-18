@@ -149,6 +149,41 @@ export function DashboardClient({
   }
 
   // Derived
+  async function handleTopUp(categoryId: string, amount: number, note: string) {
+    if (!userId) return;
+
+    // 1. Insert adjustment record
+    const { error: adjError } = await supabase
+      .from("budget_adjustments")
+      .insert({
+        user_id: userId,
+        category_id: categoryId,
+        amount: amount,
+        note: note,
+      });
+
+    if (adjError) {
+      console.error("Error adding adjustment:", adjError);
+      return;
+    }
+
+    // 2. Update category budget
+    // We can fetch the category, find it in local state, and update.
+    const category = categories.find((c) => c.id === categoryId);
+    if (!category) return;
+
+    const newBudget = (category.budget || 0) + amount;
+
+    const { error: catError } = await supabase
+      .from("categories")
+      .update({ budget: newBudget })
+      .eq("id", categoryId);
+
+    if (!catError) {
+      // 3. Refresh data
+      await refreshData();
+    }
+  }
   const currencyObj = initialCurrencies.find((c) => c.code === currency) || {
     code: "PKR",
     name: "Pakistani Rupee",
@@ -230,6 +265,7 @@ export function DashboardClient({
             currencySymbol={currencyObj.symbol}
             onAddCategory={handleAddCategory}
             onDeleteCategory={handleDeleteCategory}
+            onTopUp={handleTopUp}
           />
         </div>
       </div>
